@@ -1,0 +1,3 @@
+project_name: chla
+project_home: /path/to/project
+log_dir:      /path/to/project/logs

@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+
+require 'chla'
+
+module Chla
+
+  if ARGV.length >= 1
+    # prevent arbitrary code execution
+    unless ARGV[0] =~ /^([A-Z][a-z]*)+(::([A-Z][a-z]*)+)*$/
+      puts 'Must provide a valid class name'
+      exit -1
+    end
+
+    # instantiate
+    klass = nil
+    begin
+      klass = eval ARGV.shift
+      LOGGER.info "Instantiating Lomi #{klass}"
+      obj = klass.new *ARGV
+      LOGGER.info "Done instantiating Lomi #{klass}"
+    rescue Exception => e
+      LOGGER.error "Error instantiating class #{klass}: #{e}"
+      LOGGER.error e.backtrace
+    end
+
+    # run
+    begin
+      LOGGER.info "Starting Lomi #{klass}"
+      obj.run if obj.respond_to? :run
+      LOGGER.info "Done running Lomi #{klass}"
+    rescue Exception => e
+      LOGGER.error "Error running Lomi #{klass}: #{e}"
+      LOGGER.error e.backtrace
+    end
+
+    # finish
+    begin
+      LOGGER.info "Finishing Lomi #{klass}"
+      obj.finish if obj.respond_to? :finish
+      LOGGER.info "Done finishing Lomi #{klass}"
+    rescue Exception => e
+      LOGGER.error "Error finishing Lomi #{klass}: #{e}"
+      LOGGER.error e.backtrace
+    end
+
+  else
+    puts "Usage: lomirun LOMI_CLASS [ARGUMENTS...]"
+  end
+
+end
