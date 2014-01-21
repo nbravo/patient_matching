@@ -24,7 +24,9 @@ module Chla
 end
 
 # Processor classes
+require 'processors/patient_match_processor'
 # end Processor classes
 
 # Lomi classes
+require 'lomis/patient_resolution_lomi'
 # end Lomi classes
