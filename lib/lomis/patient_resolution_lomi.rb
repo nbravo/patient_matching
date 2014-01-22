@@ -7,15 +7,14 @@ module Chla
     def initialize(options = {})
       @mongo_client = MongoClient.new("sherylj", 27017)
       puts "initializing #{self.class}"
-      puts 'hey ho'
     end
 
     def run
       @db = @mongo_client.db("picu_cerner_match")
       patients = @db["patients"]
-      assign_patient_ids(patients)
-      propagate_resolved_patient_ids(patients)
-      puts patients.find.to_a
+      #assign_patient_ids(patients)
+      #propagate_resolved_patient_ids(patients)
+      match_dates(patients)
       puts "running #{self.class}"
     end
 
@@ -44,12 +43,23 @@ module Chla
       end
     end
 
-    def time_match(patients)
+    def match_dates(patients)
+      puts 'match dates'
       events = @db["events"]
+      encounters = @db["encounters"]
       events.find().each do |event|
-        if patients.find({:resolved_patient_id => event["resolved_patient_id"]})["source"] == "cerner"
+        resolved_patient_id = event["resolved_patient_id"]
+        patients.find({:resolved_patient_id => resolved_patient_id, :source => "picudb"}).each do |patient|
+          patient_encounters = encounters.find({:patient_id => patient["_id"]})
+          patient_encounters.each do |patient_encounter|
+            if within_time_interval(event, encounter)
+              events.update({:_id => event["_id"]}, {"$set" => {:resolved_encounter_id => encounter["_id"]}})
+              break
+            end
+          end
         end
       end
+      puts 'done with match dates'
     end
 
   end
