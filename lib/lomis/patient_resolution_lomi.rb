@@ -44,6 +44,14 @@ module Chla
       end
     end
 
+    def time_match(patients)
+      events = @db["events"]
+      events.find().each do |event|
+        if patients.find({:resolved_patient_id => event["resolved_patient_id"]})["source"] == "cerner"
+        end
+      end
+    end
+
   end
 end
 
