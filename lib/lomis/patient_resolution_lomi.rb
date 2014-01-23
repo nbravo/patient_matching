@@ -26,7 +26,7 @@ module Chla
     end
 
     def assign_patient_ids(patients)
-      patients.find(:source => "picudb").each do |patient|
+      patients.find({:source => "picudb"}).each do |patient|
         patients.update({mrn: patient["mrn"]}, {"$set" => {"resolved_patient_id" => SecureRandom.hex}}, {:multi => true})
       end
     end
@@ -44,11 +44,8 @@ module Chla
     def match_dates(patients)
       events = @db["events"]
       encounters = @db["encounters"]
-      patients.find({:source => "cerner_patients"}).each do |cerner_patient|
-        if cerner_patient["resolved_patient_id"].nil?
-          next
-        end
-        picudb_patient_id = patients.find({:resolved_patient_id => cerner_patient["resolved_patient_id"], :source => "picudb"}).to_a.first["_id"]
+      patients.find({:source => "cerner_patients", :resolved_patient_id => {"$exists" => true}}).each do |cerner_patient|
+        picudb_patient_id = patients.find_one({:resolved_patient_id => cerner_patient["resolved_patient_id"], :source => "picudb"})["_id"]
         cerner_events = events.find({:patient_id => cerner_patient["_id"]})
         cerner_events.each do |cerner_event|
           encounters.find({:patient_id => picudb_patient_id}).each do |encounter|
