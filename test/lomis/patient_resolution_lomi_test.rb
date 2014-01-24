@@ -40,6 +40,14 @@ module Chla
       @lomi.events.update({}, {:$unset => {:resolved_encounter_id => ""}}, {:multi => true})
     end
 
+    def test_run
+      @lomi.run
+    end
+
+    def test_finish
+      @lomi.finish
+    end
+
     def test_resolve_patient_ids
       assert_equal @lomi.patients.find({:resolved_patient_id => {:$exists => true}}).count(), 0
       @lomi.resolve_patient_ids
