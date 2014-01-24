@@ -9,13 +9,8 @@ module Chla
     def initialize(options = {:env => "development"})
       puts "initializing #{self.class}"
       read_config(options)
-puts @host
-puts @port
-puts @database
       @mongo_client = MongoClient.new(@host, @port)
-puts 'created mongo_client'
       @db = @mongo_client.db(@database)
-puts 'connected to picu_curner_match'
       @patients = @db["patients"]
       @encounters = @db["encounters"]
       @events = @db["events"]
