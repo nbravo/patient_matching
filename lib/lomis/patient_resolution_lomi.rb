@@ -41,10 +41,6 @@ module Chla
       end
     end
 
-    def patient_resolution_selector(patient)
-      {mrn: patient["mrn"]}
-    end
-
     def propagate_resolved_patient_ids
       @patients.find().each do |patient|
         patient_id = patient["_id"]
@@ -56,8 +52,16 @@ module Chla
     def resolve_encounter_ids
       @encounters.find({:resolved_patient_id => {:$exists => true}, :source => "picudb"}).each do |picudb_encounter|
         cerner_patient = @patients.find_one({:resolved_patient_id => picudb_encounter["resolved_patient_id"], :source => "cerner_patients"})
-        @events.update({:patient_id => cerner_patient["_id"], :end_time => {:$gte => picudb_encounter["admission"], :$lt => picudb_encounter["discharge"]}, :start_time => {:$gte => picudb_encounter["admission"], :$lt => picudb_encounter["discharge"]}}, {:$set => {:resolved_encounter_id => picudb_encounter["_id"]}}, {:multi => true})
+        @events.update(event_encounter_resolution_selector(cerner_patient, picudb_encounter), {:$set => {:resolved_encounter_id => picudb_encounter["_id"]}}, {:multi => true})
       end
+    end
+
+    def patient_resolution_selector(patient)
+      {mrn: patient["mrn"]}
+    end
+
+    def event_encounter_resolution_selector(patient, encounter)
+      {:patient_id => patient["_id"], :end_time => {:$gte => encounter["admission"], :$lt => encounter["discharge"]}, :start_time => {:$gte => encounter["admission"], :$lt => encounter["discharge"]}}
     end
   end
 end
