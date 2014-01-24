@@ -5,6 +5,8 @@ include Mongo
 
 module Chla
   class PatientResolutionLomi
+    attr_reader :patients, :encounters, :events
+    attr_writer :patients, :encounters, :events
 
     def initialize(options = {:env => "development"})
       puts "initializing #{self.class}"
