@@ -47,5 +47,14 @@ module Chla
       @lomi.resolve_patient_ids
       assert_equal @lomi.patients.find_one({:_id => @alice_picudb_id})["resolved_patient_id"], @lomi.patients.find_one({:_id => @alice_cerner_id})["resolved_patient_id"]
     end
+
+    def test_propagate_resolved_patient_ids
+      puts 'SECOND TEST'
+      puts @lomi.patients.find().to_a
+      puts 'DONE'
+    end
+
+    def test_resolve_encounter_ids
+    end
   end
 end
