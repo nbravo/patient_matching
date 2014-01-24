@@ -28,8 +28,8 @@ module Chla
     def read_config(options)
       config = YAML::load_file(File.join(File.dirname(File.expand_path(__FILE__)), '../../config/config.yml'))
       env = options[:env]
-      @host = config[env]["host"]
-      @port = config[env]["port"]
+      @host = config["host"]
+      @port = config["port"]
       @database = config[env]["database"]
     end
 
