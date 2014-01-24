@@ -15,9 +15,9 @@ module Chla
     end
 
     def populate_test_data
-      puts 'POPULATING'
-      @alice_picudb_id = @lomi.patients.insert({:mrn => 123, :source => "picudb", :first_name => "Alice"})
-      @alice_cerner_id = @lomi.patients.insert({:mrn => 123, :source => "cerner_patients", :first_name => "Alice"})
+      @alice_mrn = 123
+      @alice_picudb_id = @lomi.patients.insert({:mrn => @alice_mrn, :source => "picudb", :first_name => "Alice"})
+      @alice_cerner_id = @lomi.patients.insert({:mrn => @alice_mrn, :source => "cerner_patients", :first_name => "Alice"})
 
       #bob_picudb_id = @lomi.patients.insert({:mrn => 456, :source => "picudb", :first_name => "Bob"})
       #bob_cerner_id = @lomi.patients.insert({:mrn => 456, :source => "cerner_patients", :first_name => "Bob"})
@@ -25,8 +25,8 @@ module Chla
       @alice_picudb_encounter_id = @lomi.encounters.insert({:patient_id => @alice_picudb_id, :source => "picudb"})
       @alice_cerner_encounter_id = @lomi.encounters.insert({:patient_id => @alice_cerner_id, :source => "cerner_paients"})
 
-      @lomi.events.insert({:patient_id => @alice_picudb_id, :encounter_id => @alice_picudb_encounter_id})
-      @lomi.events.insert({:patient_id => @alice_cerner_id, :encounter_id => @alice_cerner_encounter_id})
+      @alice_picudb_event_id = @lomi.events.insert({:patient_id => @alice_picudb_id, :encounter_id => @alice_picudb_encounter_id})
+      @alice_cerner_event_id = @lomi.events.insert({:patient_id => @alice_cerner_id, :encounter_id => @alice_cerner_encounter_id})
     end
 
     def clear_test_data
@@ -49,9 +49,15 @@ module Chla
     end
 
     def test_propagate_resolved_patient_ids
-      puts 'SECOND TEST'
-      puts @lomi.patients.find().to_a
-      puts 'DONE'
+      resolved_patient_id = SecureRandom.hex
+      @lomi.patients.update({mrn: @alice_mrn}, {"$set" => {"resolved_patient_id" => resolved_patient_id}}, {:multi => true})
+      assert_equal @lomi.encounters.find({:resolved_patient_id => {:$exists => true}}).count(), 0
+      assert_equal @lomi.events.find({:resolved_patient_id => {:$exists => true}}).count(), 0
+      @lomi.propagate_resolved_patient_ids
+      assert_equal @lomi.encounters.find_one({:_id => @alice_picudb_encounter_id})["resolved_patient_id"], resolved_patient_id
+      assert_equal @lomi.encounters.find_one({:_id => @alice_cerner_encounter_id})["resolved_patient_id"], resolved_patient_id
+      assert_equal @lomi.events.find_one({:_id => @alice_picudb_event_id})["resolved_patient_id"], resolved_patient_id
+      assert_equal @lomi.events.find_one({:_id => @alice_cerner_event_id})["resolved_patient_id"], resolved_patient_id
     end
 
     def test_resolve_encounter_ids
