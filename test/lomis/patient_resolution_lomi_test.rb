@@ -15,6 +15,9 @@ module Chla
       clear_resolved_fields
     end
 
+    # Alice is in the picudb and cerner databases with different ids but with
+    # the same mrn. In each database she has one encounter, and each of those
+    # encounters has one event.
     def populate_test_data
       @alice_mrn = 123
       @alice_picudb_id = @lomi.patients.insert({:mrn => @alice_mrn, :source => "picudb", :first_name => "Alice"})
