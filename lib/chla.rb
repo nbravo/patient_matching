@@ -29,5 +29,4 @@ require 'processors/patient_match_processor'
 
 # Lomi classes
 require 'lomis/patient_resolution_lomi'
-require 'lomis/experiment_lomi'
 # end Lomi classes
