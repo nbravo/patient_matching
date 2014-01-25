@@ -44,15 +44,22 @@ module Chla
     def propagate_resolved_patient_ids
       @patients.find().each do |patient|
         patient_id = patient["_id"]
-        @encounters.update({:patient_id => patient_id}, {:$set => {:resolved_patient_id => patient["resolved_patient_id"]}}, {:multi => true})
-        @events.update({:patient_id => patient_id}, {:$set => {:resolved_patient_id => patient["resolved_patient_id"]}}, {:multi => true})
+        @encounters.update({:patient_id => patient_id},
+            {:$set => {:resolved_patient_id => patient["resolved_patient_id"]}},
+            {:multi => true})
+        @events.update({:patient_id => patient_id},
+            {:$set => {:resolved_patient_id => patient["resolved_patient_id"]}},
+            {:multi => true})
       end
     end
 
     def resolve_encounter_ids
       @encounters.find({:resolved_patient_id => {:$exists => true}, :source => "picudb"}).each do |picudb_encounter|
-        cerner_patient = @patients.find_one({:resolved_patient_id => picudb_encounter["resolved_patient_id"], :source => "cerner_patients"})
-        @events.update(event_encounter_resolution_selector(cerner_patient, picudb_encounter), {:$set => {:resolved_encounter_id => picudb_encounter["_id"]}}, {:multi => true})
+        cerner_patient = @patients.find_one({:resolved_patient_id => picudb_encounter["resolved_patient_id"],
+            :source => "cerner_patients"})
+        @events.update(event_encounter_resolution_selector(cerner_patient, picudb_encounter),
+            {:$set => {:resolved_encounter_id => picudb_encounter["_id"]}},
+            {:multi => true})
       end
     end
 
@@ -61,7 +68,9 @@ module Chla
     end
 
     def event_encounter_resolution_selector(patient, encounter)
-      {:patient_id => patient["_id"], :end_time => {:$gte => encounter["admission"], :$lt => encounter["discharge"]}, :start_time => {:$gte => encounter["admission"], :$lt => encounter["discharge"]}}
+      {:patient_id => patient["_id"],
+       :end_time => {:$gte => encounter["admission"], :$lt => encounter["discharge"]},
+       :start_time => {:$gte => encounter["admission"], :$lt => encounter["discharge"]}}
     end
   end
 end
