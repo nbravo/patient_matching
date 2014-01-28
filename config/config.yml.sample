@@ -1,3 +1,11 @@
 project_name: chla
 project_home: /path/to/project
 log_dir:      /path/to/project/logs
+
+host: your_host
+port: 12345
+development:
+  database: dev_database
+test:
+  database: test_database
+
